@@ -211,7 +211,7 @@ def main():
                     set_all_speed(0)
 
                 if data_list[6] > 2200:
-                    control.set_forward_backward(3)
+                    control.set_forward_backward(1)
                     if control.servo_forward_backward.duty() == 120:
                         try:
                             print("ARM DOWN!________________________!")
@@ -222,7 +222,7 @@ def main():
                         control.servo_vertical.deinit()
                 elif data_list[6] < 1000:
                     #control.set_up_down(-3)
-                    control.set_forward_backward(-3)
+                    control.set_forward_backward(-1)
                     if control.servo_forward_backward.duty() < 80:
                         try:
                             print("ARM UP!________________________!")
@@ -232,10 +232,10 @@ def main():
                     else:
                         control.servo_vertical.deinit()
                 elif data_list[7] < 1000:
-                    control.set_left_right(3)
+                    control.set_left_right(1)
                     print("LEFT") 
                 elif data_list[7] > 2200:
-                    control.set_left_right(-3)
+                    control.set_left_right(-1)
                     print("RIGHT")
                 elif data_list[5] == 0 and state["grab_button"]:
                     if state["grab_toggle"]:
@@ -257,17 +257,17 @@ def autopilot_controls():
             while True:
                 if state["autopilot"] == "off":
                     _thread.exit()
-                servo.duty(50)
+                control.servo_horizontal.duty(50)
                 left = ultrasonic.distance_cm()
                 sleep(0.01)
                 print("right distance", left)
                 sleep(1)
-                servo.duty(65)
+                control.servo_horizontal.duty(65)
                 midt = ultrasonic.distance_cm()
                 sleep(0.01)
                 print("midt distance", midt)
                 sleep(1)
-                servo.duty(85)
+                control.servo_horizontal.duty(85)
                 right = ultrasonic.distance_cm()
                 sleep(0.01)
                 print("left distance", right)
