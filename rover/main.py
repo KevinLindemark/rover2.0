@@ -10,7 +10,9 @@ buzz = PWM(buzzer_pin, freq=500, duty=0)
 speed = 1023
 stop = 0
 
-ultrasonic = HCSR04(5, 18)
+ultrasonic_right = HCSR04(5, 18)
+ultrasonic_left = HCSR04(15, 4)
+
 
 L_IN1 = PWM(Pin(32),freq=50, duty=0)
 L_IN2 = PWM(Pin(33),freq=50, duty=0)
@@ -109,28 +111,28 @@ def set_all_speed(x):
    L_IN3.duty(x)
    L_IN4.duty(x)
    
-def motor_R_backwards():
+def motor_R_backwards(var_speed=speed):
     R_IN1.duty(stop)
-    R_IN2.duty(speed)
+    R_IN2.duty(var_speed)
     R_IN3.duty(stop)
-    R_IN4.duty(speed)
+    R_IN4.duty(var_speed)
    
-def motor_R_forward():
-    R_IN1.duty(speed)
+def motor_R_forward(var_speed=speed):
+    R_IN1.duty(var_speed)
     R_IN2.duty(stop)
-    R_IN3.duty(speed)
+    R_IN3.duty(var_speed)
     R_IN4.duty(stop)
    
-def motor_L_backwards():
+def motor_L_backwards(var_speed=speed):
     L_IN1.duty(stop)
-    L_IN2.duty(speed)
+    L_IN2.duty(var_speed)
     L_IN3.duty(stop)
-    L_IN4.duty(speed)
+    L_IN4.duty(var_speed)
 
-def motor_L_forward():
-    L_IN1.duty(speed)
+def motor_L_forward(var_speed=speed):
+    L_IN1.duty(var_speed)
     L_IN2.duty(stop)
-    L_IN3.duty(speed)
+    L_IN3.duty(var_speed)
     L_IN4.duty(stop)
    
 set_all_speed(0)
@@ -257,29 +259,30 @@ def autopilot_controls():
             while True:
                 if state["autopilot"] == "off":
                     _thread.exit()
-                control.servo_horizontal.duty(50)
-                left = ultrasonic.distance_cm()
+                left = ultrasonic_left.distance_cm()
                 sleep(0.01)
-                print("right distance", left)
-                sleep(1)
-                control.servo_horizontal.duty(65)
-                midt = ultrasonic.distance_cm()
+                print("left distance", left)
+                
+                right = ultrasonic_right.distance_cm()
                 sleep(0.01)
-                print("midt distance", midt)
-                sleep(1)
-                control.servo_horizontal.duty(85)
-                right = ultrasonic.distance_cm()
-                sleep(0.01)
-                print("left distance", right)
-                sleep(1)
-                if midt < 10:
+                print("right distance", right)
+                
+                if left < 5:
                     motor_R_backwards()
                     motor_L_backwards()
                     sleep(0.1)
-                    motor_L_forward()
-                    motor_R_backwards()
-                    sleep(0.3)
+                    motor_R_forward(512)
+                    motor_L_backwards(512)
+                    sleep(0.13)
                     set_all_speed(0)
+                elif right < 5:
+                    motor_R_backwards()
+                    motor_L_backwards()
+                    sleep(0.1)
+                    motor_L_forward(512)
+                    motor_R_backwards(512)
+                    sleep(0.13)
+                    set_all_speed(0)                   
                 elif  left > right:
                     motor_R_backwards()
                     motor_L_forward()
@@ -313,7 +316,7 @@ def auto_pilot():
                 print(data_list)
                 state["autopilot"] = "off"
             state["btn1_status"] = data_list[0]
-            print("autopilote state :", state["autopilot"])
+            #print("autopilote state :", state["autopilot"])
             if state["autopilot"] == "off":
                 _thread.start_new_thread(main, ())
                 _thread.exit()
